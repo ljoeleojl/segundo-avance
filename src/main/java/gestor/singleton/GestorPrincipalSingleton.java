@@ -58,78 +58,132 @@ public class GestorPrincipalSingleton implements Mediador {
     }
 
     public void notifyObservers(String evento) {
+        notifyObservers(evento, this);
+    }
+
+    public void notifyObservers(String evento, Object data) {
         for (Observer o : observers) {
-            o.update(evento, this);
+            o.update(evento, data);
         }
     }
 
     // ─── Mediador ────────────────────────────────────────────────
     @Override
     public void notificar(Object notificacion, String evento) {
-        System.out.println("[GestorPrincipal] Mediando evento '" + evento + "' de: " +
-                notificacion.getClass().getSimpleName());
+        System.out.println("[GestorPrincipal] Mediando evento '" + evento + "' de: "
+                + notificacion.getClass().getSimpleName());
 
         switch (evento) {
             case "TAREA_CREADA":
-                this.tarea = (notificacion instanceof Tarea) ? (Tarea) notificacion : this.tarea;
-                notifyObservers("TAREA_CREADA");
+                if (notificacion instanceof Tarea
+                        && !(notificacion instanceof Bug)
+                        && !(notificacion instanceof Funcionalidad)) {
+                    this.tarea = (Tarea) notificacion;
+                }
+                notifyObservers("TAREA_CREADA", notificacion);
                 break;
+
+            case "BUG_CREADO":
+                if (notificacion instanceof Bug) {
+                    this.bug = (Bug) notificacion;
+                }
+                notifyObservers("BUG_CREADO", notificacion);
+                break;
+
+            case "FUNCIONALIDAD_CREADA":
+                if (notificacion instanceof Funcionalidad) {
+                    this.func = (Funcionalidad) notificacion;
+                }
+                notifyObservers("FUNCIONALIDAD_CREADA", notificacion);
+                break;
+
+            case "PROYECTO_CREADO":
+                if (notificacion instanceof Proyecto) {
+                    this.proyecto = (Proyecto) notificacion;
+                }
+                notifyObservers("PROYECTO_CREADO", notificacion);
+                break;
+
             case "ESTADO_CAMBIADO":
-                notifyObservers("ESTADO_CAMBIADO");
+                notifyObservers("ESTADO_CAMBIADO", notificacion);
                 break;
+
             case "REUNION_CREADA":
-                notifyObservers("REUNION_CREADA");
+                notifyObservers("REUNION_CREADA", notificacion);
                 break;
+
             case "USUARIO_REGISTRADO":
-                this.usuario = (notificacion instanceof UsuarioReal) ? (UsuarioReal) notificacion : this.usuario;
-                notifyObservers("USUARIO_REGISTRADO");
+                if (notificacion instanceof UsuarioReal) {
+                    this.usuario = (UsuarioReal) notificacion;
+                }
+                notifyObservers("USUARIO_REGISTRADO", notificacion);
                 break;
+
             case "TAREA_ASIGNADA":
             case "REUNION_ASIGNADA":
-                notifyObservers(evento);
+                notifyObservers(evento, notificacion);
                 break;
+
             default:
-                System.out.println("[GestorPrincipal] Evento no registrado: " + evento);
-                notifyObservers(evento);
+                System.out.println("[GestorPrincipal] Evento recibido sin acción específica: " + evento);
+                notifyObservers(evento, notificacion);
         }
     }
 
     // ─── Getters / Setters ───────────────────────────────────────
-    public Tarea getTarea() { return tarea; }
+    public Tarea getTarea() {
+        return tarea;
+    }
+
     public void setTarea(Tarea tarea) {
         this.tarea = tarea;
         tarea.setMediador(this);
         notificar(tarea, "TAREA_CREADA");
     }
 
-    public Bug getBug() { return bug; }
+    public Bug getBug() {
+        return bug;
+    }
+
     public void setBug(Bug bug) {
         this.bug = bug;
         bug.setMediador(this);
-        notificar(bug, "TAREA_CREADA");
+        notificar(bug, "BUG_CREADO");
     }
 
-    public Funcionalidad getFunc() { return func; }
+    public Funcionalidad getFunc() {
+        return func;
+    }
+
     public void setFunc(Funcionalidad func) {
         this.func = func;
         func.setMediador(this);
-        notificar(func, "TAREA_CREADA");
+        notificar(func, "FUNCIONALIDAD_CREADA");
     }
 
-    public Proyecto getProyecto() { return proyecto; }
+    public Proyecto getProyecto() {
+        return proyecto;
+    }
+
     public void setProyecto(Proyecto proyecto) {
         this.proyecto = proyecto;
         proyecto.setMediador(this);
         notificar(proyecto, "PROYECTO_CREADO");
     }
 
-    public ReunionConcreto getReunionBuilder() { return reunionBuilder; }
+    public ReunionConcreto getReunionBuilder() {
+        return reunionBuilder;
+    }
+
     public void setReunionBuilder(ReunionConcreto reunionBuilder) {
         this.reunionBuilder = reunionBuilder;
         reunionBuilder.setMediador(this);
     }
 
-    public UsuarioReal getUsuario() { return usuario; }
+    public UsuarioReal getUsuario() {
+        return usuario;
+    }
+
     public void setUsuario(UsuarioReal usuario) {
         this.usuario = usuario;
         usuario.setMediador(this);
